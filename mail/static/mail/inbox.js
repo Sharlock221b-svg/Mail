@@ -8,12 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // send email
   document.querySelector('#compose-form').addEventListener('submit', submitEmail);
-
+  
 
   // By default, load the inbox
   load_mailbox('inbox');
 });
-
 
 // send the email
 function submitEmail(event) {
@@ -46,6 +45,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#content-view').style.diaplay = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -59,6 +59,7 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#content-view').style.display = 'none';
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
@@ -73,24 +74,59 @@ function load_mailbox(mailbox) {
     emails.forEach(email => {
       // Create a new email element
       const email_element = document.createElement('div');
-      email_element.id = "iemail";
-      //assign id to each email
-      email_element.dataset.id = email.id;
+      email_element.id = "email-element";
 
+      email_element.style.cursor = 'pointer';
+    
       //Check if email is read or not
-      if( email.read){
+      if( email.read ){
       email_element.className = 'p-3 mb-2 bg-secondary text-white d-flex justify-content-between border border-secondary rounded';
       } 
       else {
         email_element.className = 'p-3 mb-2 bg-light d-flex justify-content-between border border-dark rounded';
       }
+
       // Adding the content
-      email_element.innerHTML = ` <div> <b>${email.sender}</b> &nbsp; &nbsp; ${email.subject}</div>
-      <div>${email.timestamp}</div>`;
+      email_element.innerHTML = ` <div> <b>${email.sender}</b> &nbsp; &nbsp; ${email.subject}</div> <div>${email.timestamp}</div>`;
+
+      // Adding on CLICK event to email
+      email_element.addEventListener('click', () => openEmail(email.id));
 
       // Add it to the emails list
       document.querySelector('#emails-view').appendChild(email_element);
      })
+  })
+  .catch(error => console.log(error));
+  
+}
+
+
+function openEmail(id) {
+  // Show the mailbox and hide other views
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector('#content-view').style.display = 'block';
+ 
+  fetch(`/emails/${id}`)
+  .then(response => response.json())
+  .then(email => {
+      console.log(email);
+      // Add the content
+      document.querySelector('#content-view').innerHTML = `<h5><b>Form:</b> ${email.sender}</h5> 
+      <h5><b>To: </b>${email.recipients}</h5>
+      <h5><b>Subject: </b>${email.subject}</h5>
+      <h5 style="margin-bottom: 30px;"><b>Timestamp: </b>${email.timestamp}</h5>
+      <hr />
+      <p style="font-size: 18px; font-weight: 550;">${email.body}<p>
+      `;
+  })
+  .catch(error => console.log(error));
+
+  fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        read: true
+    })
   })
   .catch(error => console.log(error));
   

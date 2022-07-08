@@ -6,9 +6,41 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
   document.querySelector('#compose').addEventListener('click', compose_email);
 
+  // send email
+  document.querySelector('#compose-form').addEventListener('submit', submitEmail);
+
+
   // By default, load the inbox
   load_mailbox('inbox');
 });
+
+
+// send the email
+function submitEmail(event) {
+  // Prevent page from refreshing
+  event.preventDefault()
+  // Get the form data
+  const recipients = document.querySelector('#compose-recipients').value;
+  const subject = document.querySelector('#compose-subject').value;
+  const body = document.querySelector('#compose-body').value;
+  // Call the API
+  fetch('/emails' , {
+    method: 'POST',
+    body: JSON.stringify({
+      recipients: recipients,
+      subject: subject,
+      body: body
+    })
+  })
+  .then(response => {
+    // Direst to sent mailbox
+    load_mailbox('sent');
+    console.log(response);
+  })
+  .catch(error => console.log(error));
+
+}
+
 
 function compose_email() {
 
@@ -30,4 +62,36 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // Call the API
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(emails => {
+    //log emails
+    console.log(emails);
+    
+    emails.forEach(email => {
+      // Create a new email element
+      const email_element = document.createElement('div');
+      email_element.id = "iemail";
+      //assign id to each email
+      email_element.dataset.id = email.id;
+
+      //Check if email is read or not
+      if( email.read){
+      email_element.className = 'p-3 mb-2 bg-secondary text-white d-flex justify-content-between border border-secondary rounded';
+      } 
+      else {
+        email_element.className = 'p-3 mb-2 bg-light d-flex justify-content-between border border-dark rounded';
+      }
+      // Adding the content
+      email_element.innerHTML = ` <div> <b>${email.sender}</b> &nbsp; &nbsp; ${email.subject}</div>
+      <div>${email.timestamp}</div>`;
+
+      // Add it to the emails list
+      document.querySelector('#emails-view').appendChild(email_element);
+     })
+  })
+  .catch(error => console.log(error));
+  
 }

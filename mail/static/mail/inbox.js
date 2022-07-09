@@ -127,7 +127,7 @@ function openEmail(id, mailbox) {
       <p style="font-size: 18px; font-weight: 550;">${email.body}<p>
       <hr style="margin-top: 36px;"/>   
       ${
-        (mailbox === "inbox" || mailbox === "archive")
+        mailbox === "inbox" || mailbox === "archive"
           ? `<button type="button" id="archive" class="btn btn-info float-xl-left" style="width:90px;">${
               email.archived ? "Unarchive" : "Archive"
             }</button>`
@@ -135,13 +135,16 @@ function openEmail(id, mailbox) {
       }
       <button type="button" id="reply" class="btn btn-success float-xl-right" style="width:90px;">Reply</button>
       `;
-
-      document.querySelector("#archive").addEventListener('click', () => archiveEmail(id,email.archived));
-      document.querySelector("#reply").addEventListener('click', () => replyEmail(id,email));
+      if (mailbox === "inbox" || mailbox === "archive") {
+        document
+          .querySelector("#archive")
+          .addEventListener("click", () => archiveEmail(id, email.archived));
+      }
+      document
+        .querySelector("#reply")
+        .addEventListener("click", () => replyEmail(id, email));
     })
     .catch((error) => console.log(error));
-
-    
 
   fetch(`/emails/${id}`, {
     method: "PUT",
@@ -151,16 +154,15 @@ function openEmail(id, mailbox) {
   }).catch((error) => console.log(error));
 }
 
-
-function archiveEmail(id,archived) {
+function archiveEmail(id, archived) {
   fetch(`/emails/${id}`, {
     method: "PUT",
     body: JSON.stringify({
-      archived: !archived
-    })
+      archived: !archived,
+    }),
   })
-  .then(() => load_mailbox("inbox"))
-  .catch((error) => console.log(error));
+    .then(() => load_mailbox("inbox"))
+    .catch((error) => console.log(error));
 }
 
 function replyEmail(id, email) {
@@ -170,13 +172,14 @@ function replyEmail(id, email) {
   document.querySelector("#content-view").style.display = "none";
 
   document.querySelector("#compose-recipients").value = email.recipients;
-  
-  if (/^Re:/.test(email.subject)){
+
+  if (/^Re:/.test(email.subject)) {
     document.querySelector("#compose-subject").value = email.subject;
-  }
-  else{
+  } else {
     document.querySelector("#compose-subject").value = `Re: ${email.subject}`;
   }
 
-  document.querySelector("#compose-body").value = `On ${email.timestamp} ${email.sender} wrote: \n\n${email.body}`;
+  document.querySelector(
+    "#compose-body"
+  ).value = `On ${email.timestamp} ${email.sender} wrote: \n\n${email.body}`;
 }

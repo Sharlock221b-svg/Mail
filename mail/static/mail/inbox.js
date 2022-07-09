@@ -40,7 +40,7 @@ function submitEmail(event) {
     .then((response) => {
       // Direst to sent mailbox
       load_mailbox("sent");
-      console.log(response);
+     // console.log(response);
     })
     .catch((error) => console.log(error));
 }
@@ -73,7 +73,7 @@ function load_mailbox(mailbox) {
     .then((response) => response.json())
     .then((emails) => {
       //log emails
-      console.log(emails);
+      //console.log(emails);
 
       emails.forEach((email) => {
         // Create a new email element
@@ -115,7 +115,7 @@ function openEmail(id, mailbox) {
   fetch(`/emails/${id}`)
     .then((response) => response.json())
     .then((email) => {
-      console.log(email);
+      //console.log(email);
       // Add the content
       document.querySelector("#content-view").innerHTML = `<h5><b>Form:</b> ${
         email.sender

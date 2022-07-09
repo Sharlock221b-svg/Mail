@@ -145,7 +145,8 @@ function openEmail(id, mailbox) {
         .addEventListener("click", () => replyEmail(id, email));
     })
     .catch((error) => console.log(error));
-
+  
+  // Mark the email as read
   fetch(`/emails/${id}`, {
     method: "PUT",
     body: JSON.stringify({
@@ -154,6 +155,7 @@ function openEmail(id, mailbox) {
   }).catch((error) => console.log(error));
 }
 
+// Archive the email
 function archiveEmail(id, archived) {
   fetch(`/emails/${id}`, {
     method: "PUT",
@@ -173,7 +175,7 @@ function replyEmail(id, email) {
 
   document.querySelector("#compose-recipients").value = email.recipients;
 
-  if (/^Re:/.test(email.subject)) {
+  if (/^Re:*/.test(email.subject)) {
     document.querySelector("#compose-subject").value = email.subject;
   } else {
     document.querySelector("#compose-subject").value = `Re: ${email.subject}`;
